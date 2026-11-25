@@ -87,5 +87,8 @@ export default {
   create,
   update,
   remove,
-  clearByCartId,removeByIdsAndCartId,findByIdAndCartId
+  clearByCartId,
+  findByIdsAndCartId,
+  findByIdAndCartId,
+  removeByIdsAndCartId,
 };

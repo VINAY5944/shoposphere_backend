@@ -138,6 +138,18 @@ GET /api/v1/admin/inventory/:productId/history?limit=20&cursor=<nextCursor>
 
 The response contains stock movements (`RESTOCK` or `ORDER`) and pagination metadata: `limit`, `hasNextPage`, and `nextCursor`. History is recorded from the time the movement-log migration is applied; earlier quantity changes cannot be reconstructed.
 
+Cart checkout requires the selected cart row IDs, so unselected cart items remain in the cart:
+
+```http
+POST /api/v1/checkout/cart
+Content-Type: application/json
+
+{
+  "cartItemIds": ["10"],
+  "paymentPassword": "<configured test password>"
+}
+```
+
 ## Database and background jobs
 
 - Migrations are stored in each module's `migrations/` directory and run with `npm run db:migrate`.
@@ -154,7 +166,7 @@ docker compose exec backend npm test
 
 ## Tests
 
-The project uses Node's built-in test runner and has focused unit tests for inventory restocking, order stock deductions, insufficient stock handling, cursor-paginated inventory history, and order-confirmation email content.
+The project uses Node's built-in test runner and has focused unit tests for selected-cart checkout, inventory restocking, order stock deductions, insufficient stock handling, cursor-paginated inventory history, and order-confirmation email content.
 
 Run them from the project root:
 

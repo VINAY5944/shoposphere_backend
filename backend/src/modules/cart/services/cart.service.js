@@ -232,9 +232,23 @@ const clearCart = async (userId) => {
   });
 };
 
-// Get cart items for checkout.
+// Get only the selected items from the customer's cart.
 // When a transaction is provided, lock the cart row first.
-const getCartForCheckout = async (userId, transaction = null) => {
+const getCartItemsForCheckout = async (
+  userId,
+  itemIds,
+  transaction = null
+) => {
+  if (!Array.isArray(itemIds) || itemIds.length === 0) {
+    throw createError("Select at least one cart item", 400);
+  }
+
+  const uniqueItemIds = [...new Set(itemIds.map(String))];
+
+  if (uniqueItemIds.length !== itemIds.length) {
+    throw createError("Cart item IDs must be unique", 400);
+  }
+
   const cart = await cartRepository.findByUserId(
     userId,
     transaction
@@ -244,21 +258,28 @@ const getCartForCheckout = async (userId, transaction = null) => {
     throw createError("Your cart is empty", 400);
   }
 
-  const cartWithItems = await cartRepository.findByUserIdWithItems(
-    userId,
+  const items = await cartItemRepository.findByIdsAndCartId(
+    uniqueItemIds,
+    cart.id,
     transaction
   );
 
-  if (!cartWithItems || cartWithItems.items.length === 0) {
-    throw createError("Your cart is empty", 400);
+  if (items.length !== uniqueItemIds.length) {
+    throw createError(
+      "One or more selected cart items were not found",
+      404
+    );
   }
 
-  return cartWithItems;
+  return { cartId: cart.id, items };
 };
 
-// Clear cart items after a successful cart checkout.
-// This does not delete the cart itself.
-const clearCartItems = async (userId, transaction = null) => {
+// Remove only the items that were included in the successful checkout.
+const removeCheckedOutItems = async (
+  userId,
+  itemIds,
+  transaction = null
+) => {
   const cart = await cartRepository.findByUserId(
     userId,
     transaction
@@ -268,10 +289,19 @@ const clearCartItems = async (userId, transaction = null) => {
     throw createError("Cart not found", 404);
   }
 
-  await cartItemRepository.clearByCartId(
+  const uniqueItemIds = [...new Set(itemIds.map(String))];
+  const removedCount = await cartItemRepository.removeByIdsAndCartId(
+    uniqueItemIds,
     cart.id,
     transaction
   );
+
+  if (removedCount !== uniqueItemIds.length) {
+    throw createError(
+      "Selected cart items changed during checkout. Please try again.",
+      409
+    );
+  }
 };
 
 export default {
@@ -280,6 +310,6 @@ export default {
   updateItem,
   removeItem,
   clearCart,
-  getCartForCheckout,
-  clearCartItems,
+  getCartItemsForCheckout,
+  removeCheckedOutItems,
 };

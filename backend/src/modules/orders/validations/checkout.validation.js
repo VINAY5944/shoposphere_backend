@@ -24,6 +24,14 @@ const paymentPasswordSchema = z
   .min(1, "Payment password is required")
   .max(100, "Payment password is too long");
 
+const cartItemIdSchema = z
+  .string()
+  .regex(/^[1-9]\d*$/, "Invalid cart item ID")
+  .refine(
+    (value) => BigInt(value) <= 9223372036854775807n,
+    "Cart item ID exceeds the maximum allowed value"
+  );
+
 // Buy Now validation.
 export const checkoutNowSchema = z.object({
   body: z.object({
@@ -39,6 +47,14 @@ export const checkoutNowSchema = z.object({
 // Cart Checkout validation.
 export const checkoutCartSchema = z.object({
   body: z.object({
+    cartItemIds: z
+      .array(cartItemIdSchema)
+      .min(1, "Select at least one cart item")
+      .max(100, "You can check out at most 100 cart items at once")
+      .refine(
+        (ids) => new Set(ids).size === ids.length,
+        "Cart item IDs must be unique"
+      ),
     paymentPassword: paymentPasswordSchema,
   }),
 });

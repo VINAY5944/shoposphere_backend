@@ -34,6 +34,7 @@ const checkoutCart = async (req, res, next) => {
   try {
     const result = await checkoutService.checkoutCart({
       userId: req.auth.userId,
+      cartItemIds: req.body.cartItemIds,
       paymentPassword: req.body.paymentPassword,
     });
 

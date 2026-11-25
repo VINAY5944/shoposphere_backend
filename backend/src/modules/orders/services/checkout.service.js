@@ -149,22 +149,32 @@ const generateOrderNumber = () => {
     .toUpperCase()}`;
 };
 
-// Compare two product lists independent of their array order.
-const haveSameItems = (firstItems, secondItems) => {
+// Confirm selected cart rows did not change while payment was processed.
+const haveSameCartItems = (firstItems, secondItems) => {
   if (firstItems.length !== secondItems.length) {
     return false;
   }
 
   const expectedItemsMap = new Map(
     firstItems.map((item) => [
-      item.productId,
-      item.quantity,
+      String(item.id),
+      {
+        productId: String(item.productId),
+        quantity: item.quantity,
+      },
     ])
   );
 
   return secondItems.every(
-    (item) =>
-      expectedItemsMap.get(item.productId) === item.quantity
+    (item) => {
+      const expected = expectedItemsMap.get(String(item.id));
+
+      return (
+        expected &&
+        expected.productId === String(item.productId) &&
+        expected.quantity === item.quantity
+      );
+    }
   );
 };
 
@@ -173,6 +183,8 @@ const completeCheckout = async ({
   userId,
   items,
   paymentPassword,
+  cartItemIds,
+  selectedCartItems,
   clearCart = false,
 }) => {
   const normalizedItems = normalizeItems(items);
@@ -214,6 +226,22 @@ const completeCheckout = async ({
   // Create order, order items, and decrease stock atomically.
   const order = await sequelize.transaction(
     async (transaction) => {
+      if (clearCart) {
+        const currentSelection =
+          await cartService.getCartItemsForCheckout(
+            userId,
+            cartItemIds,
+            transaction
+          );
+
+        if (!haveSameCartItems(selectedCartItems, currentSelection.items)) {
+          throw createError(
+            "Selected cart items changed during payment. Please try again.",
+            409
+          );
+        }
+      }
+
       // Lock inventory records in sorted product ID order.
       // This reduces the risk of deadlocks when orders contain
       // multiple products.
@@ -233,35 +261,6 @@ const completeCheckout = async ({
           orderNumber,
           transaction
         );
-      }
-
-      // For cart checkout, lock and verify the cart.
-      if (clearCart) {
-        const currentCart =
-          await cartService.getCartForCheckout(
-            userId,
-            transaction
-          );
-
-        const currentItems = normalizeItems(
-          currentCart.items.map((item) => ({
-            productId: item.productId,
-            quantity: item.quantity,
-          }))
-        );
-
-        // Compare by product ID, not array position.
-        const sameItems = haveSameItems(
-          normalizedItems,
-          currentItems
-        );
-
-        if (!sameItems) {
-          throw createError(
-            "Your cart changed during payment. Please try again.",
-            409
-          );
-        }
       }
 
       const createdOrder = await orderRepository.create(
@@ -294,8 +293,9 @@ const completeCheckout = async ({
 
       // Clear cart only for cart checkout.
       if (clearCart) {
-        await cartService.clearCartItems(
+        await cartService.removeCheckedOutItems(
           userId,
+          cartItemIds,
           transaction
         );
       }
@@ -355,9 +355,13 @@ const checkoutNow = async ({
 // Cart checkout: products come from the customer's cart.
 const checkoutCart = async ({
   userId,
+  cartItemIds,
   paymentPassword,
 }) => {
-  const cart = await cartService.getCartForCheckout(userId);
+  const cart = await cartService.getCartItemsForCheckout(
+    userId,
+    cartItemIds
+  );
 
   const items = cart.items.map((item) => ({
     productId: item.productId,
@@ -368,6 +372,8 @@ const checkoutCart = async ({
     userId,
     items,
     paymentPassword,
+    cartItemIds,
+    selectedCartItems: cart.items,
     clearCart: true,
   });
 };

@@ -10,7 +10,7 @@
     "db:seed": "node src/database/seed.js",
     "db:admin": "node src/database/create-admin.js",
     "worker:email": "node src/modules/notifications/workers/email.worker.js",
-    "test": "node --test tests/unit/inventory.service.test.js tests/unit/order-confirmation.template.test.js"
+    "test": "node --test tests/unit/inventory.service.test.js tests/unit/order-confirmation.template.test.js tests/unit/cart-checkout.test.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
