@@ -1,0 +1,5 @@
+export const FAILED_NOTIFICATION_STATUS = Object.freeze({
+  FAILED: "FAILED",
+  RETRYING: "RETRYING",
+  RESOLVED: "RESOLVED",
+});
