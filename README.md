@@ -154,7 +154,7 @@ docker compose exec backend npm test
 
 ## Tests
 
-The project uses Node's built-in test runner and has focused unit tests for inventory restocking, order stock deductions, insufficient stock handling, and cursor-paginated inventory history.
+The project uses Node's built-in test runner and has focused unit tests for inventory restocking, order stock deductions, insufficient stock handling, cursor-paginated inventory history, and order-confirmation email content.
 
 Run them from the project root:
 

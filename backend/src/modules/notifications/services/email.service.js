@@ -8,6 +8,7 @@ export const enqueueOrderConfirmationEmail = async ({
   orderNumber,
   totalAmount,
   currency,
+  items = [],
 }) => {
   const jobId = `order-confirmation-${orderNumber}`;
   const notification = await notificationService.createQueuedNotification({
@@ -26,6 +27,7 @@ export const enqueueOrderConfirmationEmail = async ({
         orderNumber,
         totalAmount,
         currency,
+        items,
         notificationId: notification.id,
       },
       { jobId }

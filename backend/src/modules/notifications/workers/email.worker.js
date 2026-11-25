@@ -6,6 +6,7 @@ import { EMAIL_QUEUE_NAME } from "../email.constants.js";
 import emailQueue from "../queues/email.queue.js";
 import failedNotificationService from "../services/failed-notification.service.js";
 import notificationService from "../services/notification.service.js";
+import { buildOrderConfirmationEmail } from "../templates/orderConfirmation.template.js";
 
 const redisConnection = {
   host: process.env.REDIS_HOST || "redis",
@@ -143,19 +144,6 @@ const reconcileRetainedNotifications = async () => {
   await reconcileRetainedFailures();
 };
 
-const escapeHtml = (value = "") =>
-  String(value).replace(/[&<>"']/g, (character) => {
-    const entities = {
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;",
-    };
-
-    return entities[character];
-  });
-
 const emailWorker = new Worker(
   EMAIL_QUEUE_NAME,
   async (job) => {
@@ -169,48 +157,22 @@ const emailWorker = new Worker(
       orderNumber,
       totalAmount,
       currency,
+      items,
     } = job.data;
-
-    const safeName = escapeHtml(customerName);
-    const safeOrderNumber = escapeHtml(orderNumber);
-    const safeAmount = escapeHtml(totalAmount);
-    const safeCurrency = escapeHtml(currency);
+    const emailContent = buildOrderConfirmationEmail({
+      customerName,
+      orderNumber,
+      totalAmount,
+      currency,
+      items,
+    });
 
     await transporter.sendMail({
       from: process.env.SMTP_FROM,
       to: email,
       subject: `ShopSphere - Order ${orderNumber} confirmed`,
-
-      text: `
-Hello ${customerName},
-
-Your order has been confirmed.
-
-Order number: ${orderNumber}
-Total amount: ${currency} ${totalAmount}
-
-Thank you for shopping with ShopSphere!
-      `,
-
-      html: `
-        <div style="font-family: Arial, sans-serif;">
-          <h2>Thank you for your order!</h2>
-
-          <p>Hello ${safeName},</p>
-
-          <p>Your ShopSphere order has been confirmed.</p>
-
-          <p>
-            <strong>Order number:</strong> ${safeOrderNumber}
-          </p>
-
-          <p>
-            <strong>Total:</strong> ${safeCurrency} ${safeAmount}
-          </p>
-
-          <p>Thank you for shopping with us!</p>
-        </div>
-      `,
+      text: emailContent.text,
+      html: emailContent.html,
     });
 
     console.log(

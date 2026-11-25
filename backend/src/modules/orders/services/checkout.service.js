@@ -314,6 +314,7 @@ const completeCheckout = async ({
       orderNumber,
       totalAmount: prepared.totalAmount,
       currency: "INR",
+      items: prepared.items,
     });
 
     notificationQueued = true;
