@@ -3,7 +3,7 @@ import multer from "multer";
 import path from "node:path";
 import crypto from "node:crypto";
 
-import { ensureDirectoryExists } from "../utils/fileSystem.utils";
+import { ensureDirectoryExists } from "../utils/fileSystem.utils.js";
 
 // Create uploads/products directory.
 const uploadDirectory = ensureDirectoryExists("uploads/products");
