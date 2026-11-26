@@ -11,12 +11,7 @@ import {
   getCursorPagination,
 } from "../../../shared/utils/cursorPagination.js";
 
-const createError = (message, statusCode = 400) => {
-  const error = new Error(message);
-  error.statusCode = statusCode;
-  return error;
-};
-
+import createError from "../../../shared/utils/error.js";
 const decodeHistoryCursor = (cursor) => {
   if (!cursor) {
     return null;

@@ -1,11 +1,7 @@
 import { FAILED_NOTIFICATION_STATUS } from "../failed-notification.constants.js";
 import failedNotificationRepository from "../repositories/failed-notification.repository.js";
 
-const createError = (message, statusCode = 400) => {
-  const error = new Error(message);
-  error.statusCode = statusCode;
-  return error;
-};
+import createError from "../../../shared/utils/error.js";
 
 const serializeFailedJob = (record) => {
   const payload = record.payload || {};

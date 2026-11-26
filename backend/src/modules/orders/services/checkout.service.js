@@ -14,11 +14,7 @@ import { enqueueOrderConfirmationEmail } from "../../notifications/services/emai
 
 import * as orderRepository from "../repositories/order.repository.js";
 
-const createError = (message, statusCode = 400) => {
-  const error = new Error(message);
-  error.statusCode = statusCode;
-  return error;
-};
+import createError from "../../../shared/utils/error.js";
 
 // Convert a decimal price into integer paise.
 const toPaise = (price) => {

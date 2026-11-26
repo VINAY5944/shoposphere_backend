@@ -2,11 +2,7 @@ import { NOTIFICATION_STATUS } from "../notification.constants.js";
 import failedNotificationRepository from "../repositories/failed-notification.repository.js";
 import notificationRepository from "../repositories/notification.repository.js";
 
-const createError = (message, statusCode = 400) => {
-  const error = new Error(message);
-  error.statusCode = statusCode;
-  return error;
-};
+import createError from "../../../shared/utils/error.js";
 
 const toIsoString = (date) => (date ? date.toISOString() : null);
 

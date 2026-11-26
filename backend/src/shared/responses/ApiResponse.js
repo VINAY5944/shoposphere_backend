@@ -5,7 +5,7 @@ const sendResponse = (
     message = "Success",
     data = null,
     meta = null,
-  }
+  } = {}
 ) => {
   const response = {
     success: true,
@@ -14,7 +14,7 @@ const sendResponse = (
     data,
   };
 
-  if (meta) {
+  if (meta !== null) {
     response.meta = meta;
   }
 

@@ -7,7 +7,7 @@ import inventoryRepository from "../../inventory/repositories/inventory.reposito
 import {
   deleteUploadedFile,
 } from "../../../utils/fileSystem.utils.js";
-
+import createError from "../../../shared/utils/error.js";
 // Generate a URL-friendly slug.
 const generateSlug = (value) =>
   value
@@ -17,11 +17,6 @@ const generateSlug = (value) =>
     .replace(/^-+|-+$/g, "");
 
 // Create application errors.
-const createError = (message, statusCode) => {
-  const error = new Error(message);
-  error.statusCode = statusCode;
-  return error;
-};
 
 // Convert uploaded file information into a public URL.
 const getImageUrl = (file) => {

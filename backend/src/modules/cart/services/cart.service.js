@@ -6,11 +6,7 @@ import cartItemRepository from "../repositories/cartItem.repository.js";
 
 import productService from "../../products/services/product.service.js";
 
-const createError = (message, statusCode = 400) => {
-  const error = new Error(message);
-  error.statusCode = statusCode;
-  return error;
-};
+import createError from "../../../shared/utils/error.js";
 
 // Get or create the customer's cart.
 const getOrCreateCart = async (userId, transaction = null) => {

@@ -1,11 +1,7 @@
 import * as orderRepository from "../repositories/order.repository.js";
 import { PAYMENT_STATUS } from "../../payments/constants/payment.constants.js";
 
-const createError = (message, statusCode) => {
-  const error = new Error(message);
-  error.statusCode = statusCode;
-  return error;
-};
+import createError from "../../../shared/utils/error.js";
 
 const encodeCursor = (payload) =>
   Buffer.from(JSON.stringify(payload)).toString("base64url");

@@ -1,6 +1,6 @@
 
 import categoryRepository from "../repositories/category.repository.js";
-
+import createError from "../../../shared/utils/error.js";
 // Convert a name into a URL-friendly slug.
 const generateSlug = (value) => {
   return value
@@ -11,11 +11,6 @@ const generateSlug = (value) => {
 };
 
 // Create an error with an HTTP status code.
-const createError = (message, statusCode) => {
-  const error = new Error(message);
-  error.statusCode = statusCode;
-  return error;
-};
 
 // Encode the last category ID into a Base64 cursor.
 const encodeCursor = (id) => {
